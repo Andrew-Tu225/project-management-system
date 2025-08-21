@@ -1,5 +1,6 @@
 package com.easya.projectmanagementsystem.backend.User;
 
+import com.easya.projectmanagementsystem.backend.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,10 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public void createUser(User user) {
+        userRepository.save(user);
     }
 
 }
