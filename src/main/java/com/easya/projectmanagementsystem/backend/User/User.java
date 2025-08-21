@@ -1,7 +1,10 @@
 package com.easya.projectmanagementsystem.backend.User;
 
+import com.easya.projectmanagementsystem.backend.semesters.Semester;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -18,4 +21,7 @@ public class User {
     private String email;
 
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private List<Semester> semesters;
 }
