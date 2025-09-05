@@ -3,6 +3,8 @@ package com.aceproject.projectmanagementsystem.backend.user;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Instant;
+
 @Data
 @Entity
 @Table(name = "users")
@@ -11,10 +13,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String name;
-
-    @Column(unique = true)
+    private String provider;
+    private String providerUserId;
     private String email;
+    private String name;
+    private String avatarUrl;
 
-    private String password;
+    private Instant createdAt;
+    private Instant lastLoginAt;
 }

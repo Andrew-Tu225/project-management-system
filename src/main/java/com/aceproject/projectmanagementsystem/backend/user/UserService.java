@@ -1,9 +1,10 @@
 package com.aceproject.projectmanagementsystem.backend.user;
 
-import com.aceproject.projectmanagementsystem.dto.UserDTO;
-import com.aceproject.projectmanagementsystem.dto.UserRegisterDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -14,36 +15,21 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    private UserDTO convertToDTO(User user) {
+    public UserDTO convertToDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setName(user.getName());
         userDTO.setEmail(user.getEmail());
+        userDTO.setAvatarUrl(user.getAvatarUrl());
         return userDTO;
     }
 
-    public UserDTO getUserByID(long id) {
-        User user = userRepo.findById(id).get();
-        return convertToDTO(user);
-    }
-
-    public UserDTO addUser(UserRegisterDTO userRegisterDTO) {
-        User user = new User();
-        user.setName(userRegisterDTO.getName());
-        user.setEmail(userRegisterDTO.getEmail());
-        user.setPassword(userRegisterDTO.getPassword());
-
-        return convertToDTO(userRepo.save(user));
-    }
-
-    public UserDTO updateUser(long id, UserRegisterDTO userRegisterDTO) {
-        User user = userRepo.findById(id).get();
-        user.setName(userRegisterDTO.getName());
-        user.setEmail(userRegisterDTO.getEmail());
-        user.setPassword(userRegisterDTO.getPassword());
-        return convertToDTO(userRepo.save(user));
-    }
-
-    public void deleteUser(long userId) {
-        userRepo.deleteById(userId);
+    public UserDTO getUserByEmail(String email) {
+        Optional<User> user = userRepo.findByEmail(email);
+        if(user.isPresent()) {
+            return convertToDTO(user.get());
+        }
+        else{
+            return null;
+        }
     }
 }

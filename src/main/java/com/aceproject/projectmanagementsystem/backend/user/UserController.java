@@ -1,10 +1,9 @@
 package com.aceproject.projectmanagementsystem.backend.user;
 
-import com.aceproject.projectmanagementsystem.dto.UserDTO;
-import com.aceproject.projectmanagementsystem.dto.UserRegisterDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,47 +16,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<UserDTO> addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
-        try{
-            UserDTO userdTO = userService.addUser(userRegisterDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(userdTO);
-        }
-        catch(Exception e){
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable long id) {
-        UserDTO userDTO = userService.getUserByID(id);
-        if (userDTO == null){
-            return ResponseEntity.notFound().build();
-        }
-        else{
-            return ResponseEntity.ok().body(userDTO);
-        }
-    }
-
-    @PutMapping("update/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable long id, @RequestBody UserRegisterDTO userRegisterDTO) {
-        if(userService.getUserByID(id) == null){
-            return ResponseEntity.notFound().build();
-        }
-        else{
-            UserDTO userDTO = userService.updateUser(id, userRegisterDTO);
-            return ResponseEntity.ok().body(userDTO);
-        }
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable long id) {
-        if(userService.getUserByID(id) == null){
-            return ResponseEntity.notFound().build();
-        }
-        else{
-            userService.deleteUser(id);
-            return ResponseEntity.ok().body("User has been deleted successfully");
-        }
+    @GetMapping("/me")
+    public UserDTO getCurrentUserInfo(@AuthenticationPrincipal OAuth2User oauth2User) {
+        String email = oauth2User.getAttribute("email");
+        return userService.getUserByEmail(email);
     }
 }

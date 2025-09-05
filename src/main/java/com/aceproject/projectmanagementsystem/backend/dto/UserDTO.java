@@ -1,9 +1,10 @@
-package com.aceproject.projectmanagementsystem.dto;
+package com.aceproject.projectmanagementsystem.backend.dto;
 
 import lombok.Data;
 
 @Data
 public class UserDTO {
-    private String name;
     private String email;
+    private String name;
+    private String avatarUrl;
 }
