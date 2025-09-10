@@ -20,7 +20,10 @@ public class SecurityConfig {
                         auth.anyRequest().authenticated())
                 .oauth2Login(oauth ->
                         oauth.userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOauth2UserService)));
+                                userInfo.userService(customOauth2UserService)))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults()) // Accept JWTs issued by Google
+                );
 
         return http.build();
     }
