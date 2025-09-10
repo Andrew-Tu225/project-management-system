@@ -1,9 +1,12 @@
 package com.aceproject.projectmanagementsystem.backend.user;
 
+import com.aceproject.projectmanagementsystem.backend.project.Project;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -18,6 +21,9 @@ public class User {
     private String email;
     private String name;
     private String avatarUrl;
+
+    @ManyToMany(mappedBy = "collaborators")
+    private List<Project> projects = new ArrayList<>();
 
     private Instant createdAt;
     private Instant lastLoginAt;
