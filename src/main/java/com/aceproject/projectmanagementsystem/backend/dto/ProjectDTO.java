@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class ProjectDTO {
+    private long id;
     private String name;
     private String description;
     private List<UserDTO> collaborators;

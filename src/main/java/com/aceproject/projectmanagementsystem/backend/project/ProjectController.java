@@ -2,6 +2,7 @@ package com.aceproject.projectmanagementsystem.backend.project;
 
 import com.aceproject.projectmanagementsystem.backend.dto.CreateProjectRequest;
 import com.aceproject.projectmanagementsystem.backend.dto.ProjectDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.ProjectUpdateRequest;
 import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
 import com.aceproject.projectmanagementsystem.backend.user.UserExtractorService;
 import com.aceproject.projectmanagementsystem.backend.user.UserService;
@@ -50,6 +51,30 @@ public class ProjectController {
         }
         catch(Exception ex){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<?> updateProject(@PathVariable Long id, @RequestBody ProjectUpdateRequest updateRequest, Authentication authentication){
+        UserDTO userDTO = userExtractor.extractUser(authentication);
+        try{
+            ProjectDTO projectDTO = projectService.updateProject(id, updateRequest, userDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(projectDTO);
+        }
+        catch(Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<?> deleteProject(@PathVariable Long id, Authentication authentication){
+        UserDTO userDTO = userExtractor.extractUser(authentication);
+        try{
+            projectService.deleteProject(id, userDTO);
+            return ResponseEntity.status(HttpStatus.OK).body("Project has been deleted");
+        }
+        catch(Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
 }

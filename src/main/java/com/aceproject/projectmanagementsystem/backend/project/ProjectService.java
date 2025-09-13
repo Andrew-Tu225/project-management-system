@@ -2,6 +2,7 @@ package com.aceproject.projectmanagementsystem.backend.project;
 
 import com.aceproject.projectmanagementsystem.backend.dto.CreateProjectRequest;
 import com.aceproject.projectmanagementsystem.backend.dto.ProjectDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.ProjectUpdateRequest;
 import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
 import com.aceproject.projectmanagementsystem.backend.user.User;
 import com.aceproject.projectmanagementsystem.backend.user.UserRepository;
@@ -26,6 +27,7 @@ public class ProjectService {
     public ProjectDTO convertToDTO(Project project) {
         ProjectDTO projectDTO = new ProjectDTO();
         List<UserDTO> collaboratorsDTOs = new ArrayList<>();
+        projectDTO.setId(project.getId());
         projectDTO.setName(project.getName());
         projectDTO.setDescription(project.getDescription());
 
@@ -62,4 +64,45 @@ public class ProjectService {
         }
     }
 
+    public ProjectDTO updateProject(long projectId, ProjectUpdateRequest updateRequest, UserDTO userDTO) throws Exception {
+        Project project = projectRepo.findById(projectId).get();
+
+        List<String> collaboratorsEmail = new ArrayList<>();
+        for (User collaborator:project.getCollaborators()){
+            collaboratorsEmail.add(collaborator.getEmail());
+        }
+
+        if (collaboratorsEmail.contains(userDTO.getEmail())) {
+            if (updateRequest.getName() != null) {
+                project.setName(updateRequest.getName());
+            }
+            if (updateRequest.getDescription() != null) {
+                project.setDescription(updateRequest.getDescription());
+            }
+            if (updateRequest.getLinks() != null) {
+                project.setLinks(updateRequest.getLinks());
+            }
+            projectRepo.save(project);
+            return convertToDTO(project);
+        }
+        else{
+            throw new Exception("user not authorized");
+        }
+    }
+
+    public void deleteProject(long projectId, UserDTO userDTO) throws Exception {
+        Project project = projectRepo.findById(projectId).get();
+
+        List<String> collaboratorsEmail = new ArrayList<>();
+        for (User collaborator:project.getCollaborators()){
+            collaboratorsEmail.add(collaborator.getEmail());
+        }
+
+        if(collaboratorsEmail.contains(userDTO.getEmail())){
+            projectRepo.deleteById(projectId);
+        }
+        else{
+            throw new Exception("user not authorized");
+        }
+    }
 }
