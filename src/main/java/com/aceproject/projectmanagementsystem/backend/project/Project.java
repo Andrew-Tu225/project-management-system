@@ -1,5 +1,6 @@
 package com.aceproject.projectmanagementsystem.backend.project;
 
+import com.aceproject.projectmanagementsystem.backend.task.Task;
 import com.aceproject.projectmanagementsystem.backend.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -27,6 +28,9 @@ public class Project {
     private List<User> collaborators = new ArrayList<>();
 
     private List<String> links = new ArrayList<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks = new ArrayList<>();
 
     private Date creationDate;
     private Date expectedFinishDate;

@@ -1,6 +1,7 @@
 package com.aceproject.projectmanagementsystem.backend.user;
 
 import com.aceproject.projectmanagementsystem.backend.project.Project;
+import com.aceproject.projectmanagementsystem.backend.task.Task;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -27,4 +28,7 @@ public class User {
 
     private Instant createdAt;
     private Instant lastLoginAt;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "people")
+    private List<Task> tasks = new ArrayList<>();
 }
