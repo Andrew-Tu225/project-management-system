@@ -1,6 +1,5 @@
 package com.aceproject.projectmanagementsystem.backend.dto;
 
-import com.aceproject.projectmanagementsystem.backend.user.User;
 import lombok.Data;
 
 import java.util.Date;
