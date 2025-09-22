@@ -19,4 +19,5 @@ public class TaskDTO {
     private List<UserDTO> people = new ArrayList<>();
     private Date startDate;
     private Date dueDate;
+    private boolean completed;
 }

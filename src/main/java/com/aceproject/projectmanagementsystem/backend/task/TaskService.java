@@ -11,6 +11,9 @@ import com.aceproject.projectmanagementsystem.backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
@@ -23,6 +26,31 @@ public class TaskService {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
     }
+
+    public List<TaskDTO> getActiveProjectTasksByProgress(long projectId, TaskProgress taskProgress) {
+        List<Task> activeProjectTasks = taskRepository.findByProjectBeforeDueDate(projectId);
+        List<TaskDTO> activeProjectTaskProgressDTOs = new ArrayList<>();
+        for (Task activeProjectTask : activeProjectTasks) {
+            System.out.println(activeProjectTask.getTitle());
+            if(activeProjectTask.getProgress() == taskProgress) {
+                activeProjectTaskProgressDTOs.add(convertToDTO(activeProjectTask));
+            }
+        }
+        return activeProjectTaskProgressDTOs;
+    }
+
+    public List<TaskDTO> getUserActiveTasksByProgress(UserDTO userDTO, TaskProgress taskProgress) {
+        List<Task> activeUserTasks = taskRepository.findTasksByPersonBeforeDueDate(userDTO.getEmail());
+        List<TaskDTO> activeUserTasksProgressDTOs = new ArrayList<>();
+        for (Task activeUserTask : activeUserTasks) {
+            if(activeUserTask.getProgress() == taskProgress) {
+                activeUserTasksProgressDTOs.add(convertToDTO(activeUserTask));
+            }
+        }
+        return activeUserTasksProgressDTOs;
+    }
+
+
 
     public TaskDTO createTask(TaskCreateDTO taskCreateDTO, UserDTO creatorDTO){
         Task task = new Task();

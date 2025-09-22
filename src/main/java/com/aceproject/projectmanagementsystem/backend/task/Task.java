@@ -43,4 +43,6 @@ public class Task {
     private Date startDate;
     private Date dueDate;
 
+    private boolean completed = false;
+
 }
