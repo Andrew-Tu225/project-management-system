@@ -5,9 +5,7 @@ import com.aceproject.projectmanagementsystem.backend.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Data
 @Entity
@@ -38,7 +36,7 @@ public class Task {
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> people =  new ArrayList<>();
+    private Set<User> people =  new HashSet<>();
 
     private Date startDate;
     private Date dueDate;

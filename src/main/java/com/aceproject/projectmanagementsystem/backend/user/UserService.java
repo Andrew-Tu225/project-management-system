@@ -46,6 +46,9 @@ public class UserService {
 
         if(user.isPresent()) {
             List<Project> projects = user.get().getProjects();
+            if(projects.isEmpty()){
+                return new ArrayList<>();
+            }
             for(Project project : projects) {
                 projectDTOList.add(projectService.convertToDTO(project));
             }

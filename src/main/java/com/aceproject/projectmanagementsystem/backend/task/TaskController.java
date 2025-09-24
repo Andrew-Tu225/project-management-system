@@ -2,6 +2,7 @@ package com.aceproject.projectmanagementsystem.backend.task;
 
 import com.aceproject.projectmanagementsystem.backend.dto.TaskCreateDTO;
 import com.aceproject.projectmanagementsystem.backend.dto.TaskDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.TaskUpdateRequest;
 import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
 import com.aceproject.projectmanagementsystem.backend.user.UserExtractorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,29 @@ public class TaskController {
         }
         catch(Exception ex){
             return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PutMapping("/update/{taskId}")
+    public ResponseEntity<TaskDTO> updateTask(@RequestBody TaskUpdateRequest taskUpdateRequest,
+                                              @PathVariable long taskId) {
+        try{
+            TaskDTO updatedTask = taskService.updateTask(taskUpdateRequest, taskId);
+            return ResponseEntity.ok(updatedTask);
+        }
+        catch(Exception ex){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/delete/{taskId}")
+    public ResponseEntity<?> deleteTask(@PathVariable long taskId) {
+        try{
+            taskService.deleteTask(taskId);
+            return ResponseEntity.ok().body("task deleted successfully");
+        }
+        catch(Exception ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }

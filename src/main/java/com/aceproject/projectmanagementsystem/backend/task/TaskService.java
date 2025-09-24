@@ -1,14 +1,12 @@
 package com.aceproject.projectmanagementsystem.backend.task;
 
-import com.aceproject.projectmanagementsystem.backend.dto.TaskCreateDTO;
-import com.aceproject.projectmanagementsystem.backend.dto.TaskDTO;
-import com.aceproject.projectmanagementsystem.backend.dto.TaskProjectDTO;
-import com.aceproject.projectmanagementsystem.backend.dto.UserDTO;
+import com.aceproject.projectmanagementsystem.backend.dto.*;
 import com.aceproject.projectmanagementsystem.backend.project.Project;
 import com.aceproject.projectmanagementsystem.backend.project.ProjectRepository;
 import com.aceproject.projectmanagementsystem.backend.user.User;
 import com.aceproject.projectmanagementsystem.backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -49,8 +47,6 @@ public class TaskService {
         }
         return activeUserTasksProgressDTOs;
     }
-
-
 
     public TaskDTO createTask(TaskCreateDTO taskCreateDTO, UserDTO creatorDTO){
         Task task = new Task();
@@ -104,5 +100,32 @@ public class TaskService {
         taskDTO.setProject(taskProjectDTO);
 
         return taskDTO;
+    }
+
+    public TaskDTO updateTask(TaskUpdateRequest taskUpdateRequest, long taskId) {
+        Task task = taskRepository.findById(taskId).get();
+        task.setTitle(taskUpdateRequest.getTitle());
+        task.setDescription(taskUpdateRequest.getDescription());
+        task.setImportance(taskUpdateRequest.getImportance());
+        task.setProgress(taskUpdateRequest.getProgress());
+        task.setDueDate(taskUpdateRequest.getDueDate());
+        task.setStartDate(taskUpdateRequest.getStartDate());
+
+        //add updated user list to task
+        for(UserDTO userDTO: taskUpdateRequest.getPeople()){
+            User newUser = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
+            task.getPeople().add(newUser);
+        }
+
+        //if progress is DONE, change field completed to True
+        if (task.getProgress() == TaskProgress.DONE) {
+            task.setCompleted(true);
+        }
+        Task updatedTask = taskRepository.save(task);
+        return convertToDTO(updatedTask);
+    }
+
+    public void deleteTask(long taskId) {
+        taskRepository.deleteById(taskId);
     }
 }
