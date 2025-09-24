@@ -13,14 +13,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOauth2UserService customOauth2UserService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOidcUserService customOidcUserService) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.anyRequest().authenticated())
                 .oauth2Login(oauth ->
                         oauth.userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOauth2UserService)))
+                                userInfo.oidcUserService(customOidcUserService)))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults()) // Accept JWTs issued by Google
                 );
