@@ -43,14 +43,14 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectDTO>> getAllProjects(Authentication authentication){
+    public ResponseEntity<?> getAllProjects(Authentication authentication){
         UserDTO userDTO = userExtractor.extractUser(authentication);
         try{
             List<ProjectDTO> projectDTOList = userService.getProjects(userDTO);
             return ResponseEntity.status(HttpStatus.OK).body(projectDTOList);
         }
         catch(Exception ex){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
