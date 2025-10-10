@@ -4,6 +4,8 @@ import com.aceproject.projectmanagementsystem.dto.CreateProjectRequest;
 import com.aceproject.projectmanagementsystem.dto.ProjectDTO;
 import com.aceproject.projectmanagementsystem.dto.ProjectUpdateRequest;
 import com.aceproject.projectmanagementsystem.dto.UserDTO;
+import com.aceproject.projectmanagementsystem.exception.AuthorizationErrorException;
+import com.aceproject.projectmanagementsystem.exception.ResourceNotFoundException;
 import com.aceproject.projectmanagementsystem.user.UserExtractorService;
 import com.aceproject.projectmanagementsystem.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +38,17 @@ public class ProjectController {
      * @param authentication: user who currently login(used to specify the creator of the project)
      * @return ResponseEntity contains:
      *                      - 201 CREATED with projectDTO if project is created successfully
-     *                      - toDO: error handling
+     *                      - 404 NOT FOUND if user is not found in database(user with this authentication doesn't exist)
      */
     @PostMapping("/create")
-    public ResponseEntity<ProjectDTO> createProject(@RequestBody CreateProjectRequest createProjectRequest, Authentication authentication) {
+    public ResponseEntity<?> createProject(@RequestBody CreateProjectRequest createProjectRequest, Authentication authentication) {
         UserDTO userDTO = userExtractor.extractUser(authentication);
         try{
             ProjectDTO projectDTO = projectService.createProject(createProjectRequest, userDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(projectDTO);
         }
-        catch(Exception ex){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        catch(ResourceNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
@@ -55,7 +57,7 @@ public class ProjectController {
      * @param authentication: user who currently login(user we try to get projects from)
      * @return ResponseEntity contains:
      *                      - 200 OK with list of projectDTO if the request is successfully
-     *                      - toDo: handle the potential error
+     *                      - 404 NOT FOUND if user cannot be found
      */
     @GetMapping
     public ResponseEntity<?> getAllProjects(Authentication authentication){
@@ -64,7 +66,7 @@ public class ProjectController {
             List<ProjectDTO> projectDTOList = userService.getProjects(userDTO);
             return ResponseEntity.status(HttpStatus.OK).body(projectDTOList);
         }
-        catch(Exception ex){
+        catch(ResourceNotFoundException ex){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
@@ -76,7 +78,8 @@ public class ProjectController {
      * @param authentication: user who currently login(used to check whether user is authorized for the update)
      * @return ResponseEntity contains:
      *                      - 200 OK with projectDTO of updated project if update is successful
-     *                      - toDo: handle the potential error
+     *                      - 401 Unauthorized if current user isn't collaborators of project
+     *                      - 404 NOT FOUND if project id is not found
      */
     @PutMapping("update/{id}")
     public ResponseEntity<?> updateProject(@PathVariable Long id, @RequestBody ProjectUpdateRequest updateRequest, Authentication authentication){
@@ -85,8 +88,11 @@ public class ProjectController {
             ProjectDTO projectDTO = projectService.updateProject(id, updateRequest, userDTO);
             return ResponseEntity.status(HttpStatus.OK).body(projectDTO);
         }
-        catch(Exception ex){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        catch(AuthorizationErrorException ex){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
+        catch(ResourceNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
@@ -96,7 +102,8 @@ public class ProjectController {
      * @param authentication: user who currently login(used to check whether user is authorized for deleting specific project)
      * @return ResponseEntity contains:
      *                      - 200 OK if project is deleted successfully
-     *                      - toDo: handle the potential error
+     *                      - 404 NOT FOUND if project is not found
+     *                      - 401 Unauthorized if user is not one of collaborators in project
      */
     @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id, Authentication authentication){
@@ -105,8 +112,11 @@ public class ProjectController {
             projectService.deleteProject(id, userDTO);
             return ResponseEntity.status(HttpStatus.OK).body("Project has been deleted");
         }
-        catch(Exception ex){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        catch(ResourceNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        catch(AuthorizationErrorException ex){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }
     }
 }

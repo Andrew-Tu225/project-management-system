@@ -8,6 +8,6 @@ import java.util.Date;
 public class CreateProjectRequest {
     private String projectName;
     private String projectDescription;
-    private Date creationDate;
+    private Date creationDate = new Date();
     private Date expectedFinishDate;
 }

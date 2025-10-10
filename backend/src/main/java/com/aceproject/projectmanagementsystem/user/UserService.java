@@ -2,6 +2,7 @@ package com.aceproject.projectmanagementsystem.user;
 
 import com.aceproject.projectmanagementsystem.dto.ProjectDTO;
 import com.aceproject.projectmanagementsystem.dto.UserDTO;
+import com.aceproject.projectmanagementsystem.exception.ResourceNotFoundException;
 import com.aceproject.projectmanagementsystem.project.Project;
 import com.aceproject.projectmanagementsystem.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class UserService {
         }
     }
 
-    public List<ProjectDTO> getProjects(UserDTO userDTO) throws Exception {
+    public List<ProjectDTO> getProjects(UserDTO userDTO) {
         Optional<User> user = userRepo.findByEmail(userDTO.getEmail());
         List<ProjectDTO> projectDTOList = new ArrayList<>();
 
@@ -55,7 +56,7 @@ public class UserService {
             return projectDTOList;
         }
         else{
-            throw new Exception("user not found");
+            throw new ResourceNotFoundException("user not found");
         }
     }
 }
