@@ -4,6 +4,8 @@ import com.aceproject.projectmanagementsystem.dto.CreateProjectRequest;
 import com.aceproject.projectmanagementsystem.dto.ProjectDTO;
 import com.aceproject.projectmanagementsystem.dto.ProjectUpdateRequest;
 import com.aceproject.projectmanagementsystem.dto.UserDTO;
+import com.aceproject.projectmanagementsystem.exception.AuthorizationErrorException;
+import com.aceproject.projectmanagementsystem.exception.ResourceNotFoundException;
 import com.aceproject.projectmanagementsystem.user.User;
 import com.aceproject.projectmanagementsystem.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +49,11 @@ public class ProjectService {
         return projectDTO;
     }
 
-    public ProjectDTO createProject(CreateProjectRequest createProjectRequest, UserDTO userDTO) throws Exception {
+    public ProjectDTO createProject(CreateProjectRequest createProjectRequest, UserDTO userDTO) {
         Project project = new Project();
         Optional<User> user = userRepo.findByEmail(userDTO.getEmail());
         if (user.isEmpty()) {
-            throw new Exception("user not found");
+            throw new ResourceNotFoundException("User is not found");
         }
         else{
             project.setName(createProjectRequest.getProjectName());
@@ -64,45 +66,72 @@ public class ProjectService {
         }
     }
 
-    public ProjectDTO updateProject(long projectId, ProjectUpdateRequest updateRequest, UserDTO userDTO) throws Exception {
-        Project project = projectRepo.findById(projectId).get();
-
-        List<String> collaboratorsEmail = new ArrayList<>();
-        for (User collaborator:project.getCollaborators()){
-            collaboratorsEmail.add(collaborator.getEmail());
+    /**
+     * helper function to get list of emails from User list
+     * @param collaboratorsList: list of user from project we try to get email from
+     * @return list of emails of collaborators
+     */
+    private List<String> getEmailFromCollaborators(List<User> collaboratorsList){
+        List<String> collaboratorsEmails = new ArrayList<>();
+        for (User collaborator:collaboratorsList){
+            collaboratorsEmails.add(collaborator.getEmail());
         }
-
-        if (collaboratorsEmail.contains(userDTO.getEmail())) {
-            if (updateRequest.getName() != null) {
-                project.setName(updateRequest.getName());
-            }
-            if (updateRequest.getDescription() != null) {
-                project.setDescription(updateRequest.getDescription());
-            }
-            if (updateRequest.getLinks() != null) {
-                project.setLinks(updateRequest.getLinks());
-            }
-            projectRepo.save(project);
-            return convertToDTO(project);
-        }
-        else{
-            throw new Exception("user not authorized");
-        }
+        return collaboratorsEmails;
     }
 
-    public void deleteProject(long projectId, UserDTO userDTO) throws Exception {
-        Project project = projectRepo.findById(projectId).get();
+    /**
+     * helper function to check whether user is one of collaborators in this project
+     * @param project: the project that we want to check
+     * @param userDTO: user currently login
+     * @return -true if user is one of collaborators of project
+     *         -false otherwise
+     */
+    private boolean isUserAuthorize(Project project, UserDTO userDTO) {
+        List<String> collaboratorEmailList = getEmailFromCollaborators(project.getCollaborators());
+        return collaboratorEmailList.contains(userDTO.getEmail());
+    }
 
-        List<String> collaboratorsEmail = new ArrayList<>();
-        for (User collaborator:project.getCollaborators()){
-            collaboratorsEmail.add(collaborator.getEmail());
-        }
+    public ProjectDTO updateProject(long projectId, ProjectUpdateRequest updateRequest, UserDTO userDTO) {
+        Project project = projectRepo.findById(projectId).orElse(null);
 
-        if(collaboratorsEmail.contains(userDTO.getEmail())){
-            projectRepo.deleteById(projectId);
+        if (project != null) {
+
+            if (isUserAuthorize(project, userDTO)) {
+                if (updateRequest.getName() != null) {
+                    project.setName(updateRequest.getName());
+                }
+                if (updateRequest.getDescription() != null) {
+                    project.setDescription(updateRequest.getDescription());
+                }
+                if (updateRequest.getLinks() != null) {
+                    project.setLinks(updateRequest.getLinks());
+                }
+                if(updateRequest.getExpectedFinishDate() != null) {
+                    project.setExpectedFinishDate(updateRequest.getExpectedFinishDate());
+                }
+                projectRepo.save(project);
+            }
+            else{
+                throw new AuthorizationErrorException("user not authorized for this request");
+            }
         }
         else{
-            throw new Exception("user not authorized");
+            throw new ResourceNotFoundException("Project is not found");
+        }
+        return convertToDTO(project);
+    }
+
+    public void deleteProject(long projectId, UserDTO userDTO) {
+        Project project = projectRepo.findById(projectId).orElse(null);
+
+        if(project == null){
+            throw new ResourceNotFoundException("Project is not found");
+        }
+        else if(!isUserAuthorize(project, userDTO)){
+            throw new AuthorizationErrorException("user not authorized for this request");
+        }
+        else{
+            projectRepo.delete(project);
         }
     }
 }
