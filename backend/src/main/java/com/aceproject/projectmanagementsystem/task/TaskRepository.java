@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -14,4 +16,7 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
 
     @Query("SELECT t from Task t JOIN t.people p WHERE p.email = :userEmail AND t.dueDate >= CURRENT_DATE")
     List<Task> findTasksByPersonBeforeDueDate(@Param("userEmail") String userEmail);
+
+    @Query("SELECT t from Task t WHERE DATE(t.dueDate) = :dueDate")
+    List<Task> findDueTasksByDueDate(@Param("dueDate") Date date);
 }
